@@ -3,7 +3,7 @@ package geofence
 // Geofence is a struct for efficient search whether a point is in polygon
 type Geofence struct {
 	vertices    []*Point
-	tiles       map[float64]string
+	tiles       map[float64]byte
 	granularity int64
 	minX        float64
 	maxX        float64
@@ -18,9 +18,9 @@ type Geofence struct {
 }
 
 const (
-	TILE_IN = byte(iota)
-	TILE_OUT
-	TILE_X
+	TILE_IN  = 0x01
+	TILE_OUT = 0x02
+	TILE_EITHER   = 0x03
 )
 
 const defaultGranularity = 20
@@ -35,7 +35,7 @@ func NewGeofence(points []*Point, args ...interface{}) *Geofence {
 		geofence.granularity = defaultGranularity
 	}
 	geofence.vertices = points
-	geofence.tiles = make(map[float64]string)
+	geofence.tiles = make(map[float64]byte)
 
 	geofence.setInclusionTiles()
 	return geofence
@@ -51,9 +51,9 @@ func (geofence *Geofence) Inside(point *Point) bool {
 	tileHash := (project(point.Lng(), geofence.tileHeight)-geofence.minTileY)*float64(geofence.granularity) + (project(point.Lat(), geofence.tileWidth) - geofence.minTileX)
 	intersects := geofence.tiles[tileHash]
 
-	if intersects == "i" {
+	if intersects == TILE_IN {
 		return true
-	} else if intersects == "x" {
+	} else if intersects == TILE_EITHER {
 		polygon := NewPolygon(geofence.vertices)
 		inside := polygon.Contains(point)
 		return inside
@@ -93,12 +93,12 @@ func (geofence *Geofence) setExclusionTiles(vertices []*Point, inclusive bool) {
 			bBoxPoly = []*Point{NewPoint(tileX*geofence.tileWidth, tileY*geofence.tileHeight), NewPoint((tileX+1)*geofence.tileWidth, tileY*geofence.tileHeight), NewPoint((tileX+1)*geofence.tileWidth, (tileY+1)*geofence.tileHeight), NewPoint(tileX*geofence.tileWidth, (tileY+1)*geofence.tileHeight), NewPoint(tileX*geofence.tileWidth, tileY*geofence.tileHeight)}
 
 			if haveIntersectingEdges(bBoxPoly, vertices) || hasPointInPolygon(vertices, bBoxPoly) {
-				geofence.tiles[tileHash] = "x"
+				geofence.tiles[tileHash] = TILE_EITHER
 			} else if hasPointInPolygon(bBoxPoly, vertices) {
 				if inclusive {
-					geofence.tiles[tileHash] = "i"
+					geofence.tiles[tileHash] = TILE_IN
 				} else {
-					geofence.tiles[tileHash] = "o"
+					geofence.tiles[tileHash] = TILE_OUT
 				}
 			} // else all points are outside the poly
 		}
