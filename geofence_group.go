@@ -1,7 +1,5 @@
 package geofence
 
-import "github.com/kellydunn/golang-geo"
-
 // region is a struct to store good and bad areas in region
 type region struct {
 	whiteouts []*Geofence
@@ -32,7 +30,7 @@ func (group *GeofenceGroup) Add(id int, whiteoutGfs []*Geofence, blackoutGfs []*
 }
 
 // IsGoodPoint checks whether the point is in the id-th fencelist's whiteouts
-func (group *GeofenceGroup) IsGoodPoint(id int, point *geo.Point) bool {
+func (group *GeofenceGroup) IsGoodPoint(id int, point *Point) bool {
 	entry, ok := group.entries[id]
 	if ok {
 		return isPointValid(point, entry.whiteouts, entry.blackouts)
@@ -42,7 +40,7 @@ func (group *GeofenceGroup) IsGoodPoint(id int, point *geo.Point) bool {
 
 // GetValidKeys returns all group id that contains point in whiteouts
 // TODO: Using map as return type is not good enough
-func (group *GeofenceGroup) GetValidKeys(point *geo.Point) map[int]bool {
+func (group *GeofenceGroup) GetValidKeys(point *Point) map[int]bool {
 	result := make(map[int]bool)
 	for id, entry := range group.entries {
 		if isPointValid(point, entry.whiteouts, entry.blackouts) {
@@ -70,7 +68,7 @@ func (group *GeofenceGroup) GetBlackouts(id int) []*Geofence {
 	return nil
 }
 
-func isPointValid(point *geo.Point, whiteoutGfs []*Geofence, blackoutGfs []*Geofence) bool {
+func isPointValid(point *Point, whiteoutGfs []*Geofence, blackoutGfs []*Geofence) bool {
 	// if a point is inside any of the blackout geofences, then it is invalid
 	if blackoutGfs != nil && len(blackoutGfs) > 0 {
 		for i := 0; i < len(blackoutGfs); i++ {

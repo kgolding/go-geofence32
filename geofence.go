@@ -1,11 +1,8 @@
 package geofence
 
-import "github.com/kellydunn/golang-geo"
-
 // Geofence is a struct for efficient search whether a point is in polygon
 type Geofence struct {
-	vertices    []*geo.Point
-	holes       [][]*geo.Point
+	vertices    []*Point
 	tiles       map[float64]string
 	granularity int64
 	minX        float64
@@ -20,21 +17,24 @@ type Geofence struct {
 	maxTileY    float64
 }
 
+const (
+	TILE_IN = byte(iota)
+	TILE_OUT
+	TILE_X
+)
+
 const defaultGranularity = 20
 
 // NewGeofence is the construct for Geofence, vertices: {{(1,2),(2,3)}, {(1,0)}}.
 // 1st array contains polygon vertices. 2nd array contains holes.
-func NewGeofence(points [][]*geo.Point, args ...interface{}) *Geofence {
+func NewGeofence(points []*Point, args ...interface{}) *Geofence {
 	geofence := &Geofence{}
 	if len(args) > 0 {
 		geofence.granularity = args[0].(int64)
 	} else {
 		geofence.granularity = defaultGranularity
 	}
-	geofence.vertices = points[0]
-	if len(points) > 1 {
-		geofence.holes = points[1:]
-	}
+	geofence.vertices = points
 	geofence.tiles = make(map[float64]string)
 
 	geofence.setInclusionTiles()
@@ -42,7 +42,7 @@ func NewGeofence(points [][]*geo.Point, args ...interface{}) *Geofence {
 }
 
 // Inside checks whether a given point is inside the geofence
-func (geofence *Geofence) Inside(point *geo.Point) bool {
+func (geofence *Geofence) Inside(point *Point) bool {
 	// Bbox check first
 	if point.Lat() < geofence.minX || point.Lat() > geofence.maxX || point.Lng() < geofence.minY || point.Lng() > geofence.maxY {
 		return false
@@ -54,21 +54,9 @@ func (geofence *Geofence) Inside(point *geo.Point) bool {
 	if intersects == "i" {
 		return true
 	} else if intersects == "x" {
-		polygon := geo.NewPolygon(geofence.vertices)
+		polygon := NewPolygon(geofence.vertices)
 		inside := polygon.Contains(point)
-		if !inside || len(geofence.holes) == 0 {
-			return inside
-		}
-
-		// if we hanve holes cut out, and the point falls within the outer ring,
-		// ensure no inner rings exclude this point
-		for i := 0; i < len(geofence.holes); i++ {
-			holePoly := geo.NewPolygon(geofence.holes[i])
-			if holePoly.Contains(point) {
-				return false
-			}
-		}
-		return true
+		return inside
 	} else {
 		return false
 	}
@@ -94,20 +82,15 @@ func (geofence *Geofence) setInclusionTiles() {
 	geofence.maxTileY = project(geofence.maxY, geofence.tileHeight)
 
 	geofence.setExclusionTiles(geofence.vertices, true)
-	if len(geofence.holes) > 0 {
-		for _, hole := range geofence.holes {
-			geofence.setExclusionTiles(hole, false)
-		}
-	}
 }
 
-func (geofence *Geofence) setExclusionTiles(vertices []*geo.Point, inclusive bool) {
+func (geofence *Geofence) setExclusionTiles(vertices []*Point, inclusive bool) {
 	var tileHash float64
-	var bBoxPoly []*geo.Point
+	var bBoxPoly []*Point
 	for tileX := geofence.minTileX; tileX <= geofence.maxTileX; tileX++ {
 		for tileY := geofence.minTileY; tileY <= geofence.maxTileY; tileY++ {
 			tileHash = (tileY-geofence.minTileY)*float64(geofence.granularity) + (tileX - geofence.minTileX)
-			bBoxPoly = []*geo.Point{geo.NewPoint(tileX*geofence.tileWidth, tileY*geofence.tileHeight), geo.NewPoint((tileX+1)*geofence.tileWidth, tileY*geofence.tileHeight), geo.NewPoint((tileX+1)*geofence.tileWidth, (tileY+1)*geofence.tileHeight), geo.NewPoint(tileX*geofence.tileWidth, (tileY+1)*geofence.tileHeight), geo.NewPoint(tileX*geofence.tileWidth, tileY*geofence.tileHeight)}
+			bBoxPoly = []*Point{NewPoint(tileX*geofence.tileWidth, tileY*geofence.tileHeight), NewPoint((tileX+1)*geofence.tileWidth, tileY*geofence.tileHeight), NewPoint((tileX+1)*geofence.tileWidth, (tileY+1)*geofence.tileHeight), NewPoint(tileX*geofence.tileWidth, (tileY+1)*geofence.tileHeight), NewPoint(tileX*geofence.tileWidth, tileY*geofence.tileHeight)}
 
 			if haveIntersectingEdges(bBoxPoly, vertices) || hasPointInPolygon(vertices, bBoxPoly) {
 				geofence.tiles[tileHash] = "x"
