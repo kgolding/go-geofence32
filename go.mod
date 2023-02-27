@@ -1,4 +1,4 @@
-module go-geofence
+module github.com/kgolding/go-geofence
 
 go 1.18
 
