@@ -3,24 +3,24 @@ package geofence
 // Geofence is a struct for efficient search whether a point is in polygon
 type Geofence struct {
 	vertices    []*Point
-	tiles       map[float64]byte
-	granularity int64
-	minX        float64
-	maxX        float64
-	minY        float64
-	maxY        float64
-	tileWidth   float64
-	tileHeight  float64
-	minTileX    float64
-	maxTileX    float64
-	minTileY    float64
-	maxTileY    float64
+	tiles       map[float32]byte
+	granularity int32
+	minX        float32
+	maxX        float32
+	minY        float32
+	maxY        float32
+	tileWidth   float32
+	tileHeight  float32
+	minTileX    float32
+	maxTileX    float32
+	minTileY    float32
+	maxTileY    float32
 }
 
 const (
-	TILE_IN  = 0x01
-	TILE_OUT = 0x02
-	TILE_EITHER   = 0x03
+	TILE_IN     = 0x01
+	TILE_OUT    = 0x02
+	TILE_EITHER = 0x03
 )
 
 const defaultGranularity = 20
@@ -30,12 +30,12 @@ const defaultGranularity = 20
 func NewGeofence(points []*Point, args ...interface{}) *Geofence {
 	geofence := &Geofence{}
 	if len(args) > 0 {
-		geofence.granularity = args[0].(int64)
+		geofence.granularity = args[0].(int32)
 	} else {
 		geofence.granularity = defaultGranularity
 	}
 	geofence.vertices = points
-	geofence.tiles = make(map[float64]byte)
+	geofence.tiles = make(map[float32]byte)
 
 	geofence.setInclusionTiles()
 	return geofence
@@ -48,7 +48,7 @@ func (geofence *Geofence) Inside(point *Point) bool {
 		return false
 	}
 
-	tileHash := (project(point.Lng(), geofence.tileHeight)-geofence.minTileY)*float64(geofence.granularity) + (project(point.Lat(), geofence.tileWidth) - geofence.minTileX)
+	tileHash := (project(point.Lng(), geofence.tileHeight)-geofence.minTileY)*float32(geofence.granularity) + (project(point.Lat(), geofence.tileWidth) - geofence.minTileX)
 	intersects := geofence.tiles[tileHash]
 
 	if intersects == TILE_IN {
@@ -73,8 +73,8 @@ func (geofence *Geofence) setInclusionTiles() {
 
 	xRange := geofence.maxX - geofence.minX
 	yRange := geofence.maxY - geofence.minY
-	geofence.tileWidth = xRange / float64(geofence.granularity)
-	geofence.tileHeight = yRange / float64(geofence.granularity)
+	geofence.tileWidth = xRange / float32(geofence.granularity)
+	geofence.tileHeight = yRange / float32(geofence.granularity)
 
 	geofence.minTileX = project(geofence.minX, geofence.tileWidth)
 	geofence.minTileY = project(geofence.minY, geofence.tileHeight)
@@ -85,11 +85,11 @@ func (geofence *Geofence) setInclusionTiles() {
 }
 
 func (geofence *Geofence) setExclusionTiles(vertices []*Point, inclusive bool) {
-	var tileHash float64
+	var tileHash float32
 	var bBoxPoly []*Point
 	for tileX := geofence.minTileX; tileX <= geofence.maxTileX; tileX++ {
 		for tileY := geofence.minTileY; tileY <= geofence.maxTileY; tileY++ {
-			tileHash = (tileY-geofence.minTileY)*float64(geofence.granularity) + (tileX - geofence.minTileX)
+			tileHash = (tileY-geofence.minTileY)*float32(geofence.granularity) + (tileX - geofence.minTileX)
 			bBoxPoly = []*Point{NewPoint(tileX*geofence.tileWidth, tileY*geofence.tileHeight), NewPoint((tileX+1)*geofence.tileWidth, tileY*geofence.tileHeight), NewPoint((tileX+1)*geofence.tileWidth, (tileY+1)*geofence.tileHeight), NewPoint(tileX*geofence.tileWidth, (tileY+1)*geofence.tileHeight), NewPoint(tileX*geofence.tileWidth, tileY*geofence.tileHeight)}
 
 			if haveIntersectingEdges(bBoxPoly, vertices) || hasPointInPolygon(vertices, bBoxPoly) {
@@ -105,24 +105,24 @@ func (geofence *Geofence) setExclusionTiles(vertices []*Point, inclusive bool) {
 	}
 }
 
-func (geofence *Geofence) getXVertices() []float64 {
-	xVertices := make([]float64, len(geofence.vertices))
+func (geofence *Geofence) getXVertices() []float32 {
+	xVertices := make([]float32, len(geofence.vertices))
 	for i := 0; i < len(geofence.vertices); i++ {
 		xVertices[i] = geofence.vertices[i].Lat()
 	}
 	return xVertices
 }
 
-func (geofence *Geofence) getYVertices() []float64 {
-	yVertices := make([]float64, len(geofence.vertices))
+func (geofence *Geofence) getYVertices() []float32 {
+	yVertices := make([]float32, len(geofence.vertices))
 	for i := 0; i < len(geofence.vertices); i++ {
 		yVertices[i] = geofence.vertices[i].Lng()
 	}
 	return yVertices
 }
 
-func getMin(slice []float64) float64 {
-	var min float64
+func getMin(slice []float32) float32 {
+	var min float32
 	if len(slice) > 0 {
 		min = slice[0]
 	}
@@ -134,8 +134,8 @@ func getMin(slice []float64) float64 {
 	return min
 }
 
-func getMax(slice []float64) float64 {
-	var max float64
+func getMax(slice []float32) float32 {
+	var max float32
 	if len(slice) > 0 {
 		max = slice[0]
 	}

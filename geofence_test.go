@@ -10,7 +10,7 @@ import (
 func TestCorrectness(t *testing.T) {
 	polygon := randomPolygon(2000, 0.1)
 	geoPoly := NewPolygon(polygon)
-	geofence := NewGeofence(polygon, int64(20))
+	geofence := NewGeofence(polygon, int32(20))
 
 	for i := 0; i < 100000; i++ {
 		point := randomPoint(200)
@@ -129,11 +129,11 @@ func BenchmarkGeoContains(b *testing.B) {
 	}
 }
 
-func randomPoint(length float64) *Point {
-	return NewPoint(rand.Float64()*length-length/2, rand.Float64()*length-length/2)
+func randomPoint(length float32) *Point {
+	return NewPoint(rand.Float32()*length-length/2, rand.Float32()*length-length/2)
 }
 
-func randomPolygon(length float64, percentageOfLength float64) []*Point {
+func randomPolygon(length float32, percentageOfLength float32) []*Point {
 	polygon := make([]*Point, 1000)
 	for i := 0; i < 1000; i++ {
 		polygon[i] = randomPoint(length * percentageOfLength)
@@ -141,8 +141,8 @@ func randomPolygon(length float64, percentageOfLength float64) []*Point {
 	return polygon
 }
 
-func randomPointCustom(minLat float64, maxLat float64, minLng float64, maxLng float64, factor float64) *Point {
+func randomPointCustom(minLat float32, maxLat float32, minLng float32, maxLng float32, factor float32) *Point {
 	latRange := maxLat - minLat
 	lngRange := maxLng - minLng
-	return NewPoint((minLat+maxLat)/2-latRange*factor/2+latRange*factor*rand.Float64(), (minLng+maxLng)/2-lngRange*factor/2+lngRange*factor*rand.Float64())
+	return NewPoint((minLat+maxLat)/2-latRange*factor/2+latRange*factor*rand.Float32(), (minLng+maxLng)/2-lngRange*factor/2+lngRange*factor*rand.Float32())
 }

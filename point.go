@@ -6,13 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math"
+
+	math "github.com/chewxy/math32"
 )
 
 // Represents a Physical Point in geographic notation [lat, lng].
 type Point struct {
-	lat float64
-	lng float64
+	lat float32
+	lng float32
 }
 
 const (
@@ -21,17 +22,17 @@ const (
 )
 
 // Returns a new Point populated by the passed in latitude (lat) and longitude (lng) values.
-func NewPoint(lat float64, lng float64) *Point {
+func NewPoint(lat float32, lng float32) *Point {
 	return &Point{lat: lat, lng: lng}
 }
 
 // Returns Point p's latitude.
-func (p *Point) Lat() float64 {
+func (p *Point) Lat() float32 {
 	return p.lat
 }
 
 // Returns Point p's longitude.
-func (p *Point) Lng() float64 {
+func (p *Point) Lng() float32 {
 	return p.lng
 }
 
@@ -39,7 +40,7 @@ func (p *Point) Lng() float64 {
 // by transposing the origin point the passed in distance (in kilometers)
 // by the passed in compass bearing (in degrees).
 // Original Implementation from: http://www.movable-type.co.uk/scripts/latlong.html
-func (p *Point) PointAtDistanceAndBearing(dist float64, bearing float64) *Point {
+func (p *Point) PointAtDistanceAndBearing(dist float32, bearing float32) *Point {
 
 	dr := dist / EARTH_RADIUS
 
@@ -67,7 +68,7 @@ func (p *Point) PointAtDistanceAndBearing(dist float64, bearing float64) *Point 
 
 // Calculates the Haversine distance between two points in kilometers.
 // Original Implementation from: http://www.movable-type.co.uk/scripts/latlong.html
-func (p *Point) GreatCircleDistance(p2 *Point) float64 {
+func (p *Point) GreatCircleDistance(p2 *Point) float32 {
 	dLat := (p2.lat - p.lat) * (math.Pi / 180.0)
 	dLon := (p2.lng - p.lng) * (math.Pi / 180.0)
 
@@ -86,7 +87,7 @@ func (p *Point) GreatCircleDistance(p2 *Point) float64 {
 
 // Calculates the initial bearing (sometimes referred to as forward azimuth)
 // Original Implementation from: http://www.movable-type.co.uk/scripts/latlong.html
-func (p *Point) BearingTo(p2 *Point) float64 {
+func (p *Point) BearingTo(p2 *Point) float32 {
 
 	dLon := (p2.lng - p.lng) * math.Pi / 180.0
 
@@ -144,13 +145,13 @@ func (p *Point) MarshalBinary() ([]byte, error) {
 func (p *Point) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewReader(data)
 
-	var lat float64
+	var lat float32
 	err := binary.Read(buf, binary.LittleEndian, &lat)
 	if err != nil {
 		return fmt.Errorf("binary.Read failed: %v", err)
 	}
 
-	var lng float64
+	var lng float32
 	err = binary.Read(buf, binary.LittleEndian, &lng)
 	if err != nil {
 		return fmt.Errorf("binary.Read failed: %v", err)
@@ -173,7 +174,7 @@ func (p *Point) MarshalJSON() ([]byte, error) {
 func (p *Point) UnmarshalJSON(data []byte) error {
 	// TODO throw an error if there is an issue parsing the body.
 	dec := json.NewDecoder(bytes.NewReader(data))
-	var values map[string]float64
+	var values map[string]float32
 	err := dec.Decode(&values)
 
 	if err != nil {

@@ -1,7 +1,7 @@
 package geofence
 
 import (
-	"math"
+	math "github.com/chewxy/math32"
 )
 
 // A Polygon is carved out of a 2D plane by a set of (possibly disjoint) contours.

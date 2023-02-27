@@ -1,10 +1,10 @@
 package geofence
 
 import (
-	"math"
+	math "github.com/chewxy/math32"
 )
 
-func project(value float64, tileSize float64) float64 {
+func project(value float32, tileSize float32) float32 {
 	return math.Floor(value / tileSize)
 }
 
@@ -57,6 +57,6 @@ func vectorDifference(p1 *Point, p2 *Point) *Point {
 	return NewPoint(p1.Lat()-p2.Lat(), p1.Lng()-p2.Lng())
 }
 
-func vectorCrossProduct(p1 *Point, p2 *Point) float64 {
+func vectorCrossProduct(p1 *Point, p2 *Point) float32 {
 	return p1.Lat()*p2.Lng() - p1.Lng()*p2.Lat()
 }
