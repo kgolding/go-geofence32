@@ -25,7 +25,7 @@ BenchmarkGeoContains	 3000000	       475 ns/op
 ====================================================*/
 func BenchmarkGeofence(b *testing.B) {
 	// Chicago geofence
-	polygon := []*Point{
+	polygon := []Point{
 		NewPoint(42.01313565896657, -87.89133314508945),
 		NewPoint(42.01086525470408, -87.94498134870082),
 		NewPoint(41.955566495567936, -87.94566393946297),
@@ -78,7 +78,7 @@ func BenchmarkGeofence(b *testing.B) {
 
 func BenchmarkGeoContains(b *testing.B) {
 	// Chicago geofence
-	polygon := []*Point{
+	polygon := []Point{
 		NewPoint(42.01313565896657, -87.89133314508945),
 		NewPoint(42.01086525470408, -87.94498134870082),
 		NewPoint(41.955566495567936, -87.94566393946297),
@@ -129,19 +129,19 @@ func BenchmarkGeoContains(b *testing.B) {
 	}
 }
 
-func randomPoint(length float32) *Point {
+func randomPoint(length float32) Point {
 	return NewPoint(rand.Float32()*length-length/2, rand.Float32()*length-length/2)
 }
 
-func randomPolygon(length float32, percentageOfLength float32) []*Point {
-	polygon := make([]*Point, 1000)
+func randomPolygon(length float32, percentageOfLength float32) []Point {
+	polygon := make([]Point, 1000)
 	for i := 0; i < 1000; i++ {
 		polygon[i] = randomPoint(length * percentageOfLength)
 	}
 	return polygon
 }
 
-func randomPointCustom(minLat float32, maxLat float32, minLng float32, maxLng float32, factor float32) *Point {
+func randomPointCustom(minLat float32, maxLat float32, minLng float32, maxLng float32, factor float32) Point {
 	latRange := maxLat - minLat
 	lngRange := maxLng - minLng
 	return NewPoint((minLat+maxLat)/2-latRange*factor/2+latRange*factor*rand.Float32(), (minLng+maxLng)/2-lngRange*factor/2+lngRange*factor*rand.Float32())

@@ -2,7 +2,7 @@ package geofence
 
 // Geofence is a struct for efficient search whether a point is in polygon
 type Geofence struct {
-	vertices    []*Point
+	vertices    []Point
 	tiles       map[float32]byte
 	granularity int32
 	minX        float32
@@ -27,7 +27,7 @@ const defaultGranularity = 20
 
 // NewGeofence is the construct for Geofence, vertices: {{(1,2),(2,3)}, {(1,0)}}.
 // 1st array contains polygon vertices. 2nd array contains holes.
-func NewGeofence(points []*Point, args ...interface{}) *Geofence {
+func NewGeofence(points []Point, args ...interface{}) *Geofence {
 	geofence := &Geofence{}
 	if len(args) > 0 {
 		geofence.granularity = args[0].(int32)
@@ -42,7 +42,7 @@ func NewGeofence(points []*Point, args ...interface{}) *Geofence {
 }
 
 // Inside checks whether a given point is inside the geofence
-func (geofence *Geofence) Inside(point *Point) bool {
+func (geofence *Geofence) Inside(point Point) bool {
 	// Bbox check first
 	if point.Lat() < geofence.minX || point.Lat() > geofence.maxX || point.Lng() < geofence.minY || point.Lng() > geofence.maxY {
 		return false
@@ -84,13 +84,13 @@ func (geofence *Geofence) setInclusionTiles() {
 	geofence.setExclusionTiles(geofence.vertices, true)
 }
 
-func (geofence *Geofence) setExclusionTiles(vertices []*Point, inclusive bool) {
+func (geofence *Geofence) setExclusionTiles(vertices []Point, inclusive bool) {
 	var tileHash float32
-	var bBoxPoly []*Point
+	var bBoxPoly []Point
 	for tileX := geofence.minTileX; tileX <= geofence.maxTileX; tileX++ {
 		for tileY := geofence.minTileY; tileY <= geofence.maxTileY; tileY++ {
 			tileHash = (tileY-geofence.minTileY)*float32(geofence.granularity) + (tileX - geofence.minTileX)
-			bBoxPoly = []*Point{NewPoint(tileX*geofence.tileWidth, tileY*geofence.tileHeight), NewPoint((tileX+1)*geofence.tileWidth, tileY*geofence.tileHeight), NewPoint((tileX+1)*geofence.tileWidth, (tileY+1)*geofence.tileHeight), NewPoint(tileX*geofence.tileWidth, (tileY+1)*geofence.tileHeight), NewPoint(tileX*geofence.tileWidth, tileY*geofence.tileHeight)}
+			bBoxPoly = []Point{NewPoint(tileX*geofence.tileWidth, tileY*geofence.tileHeight), NewPoint((tileX+1)*geofence.tileWidth, tileY*geofence.tileHeight), NewPoint((tileX+1)*geofence.tileWidth, (tileY+1)*geofence.tileHeight), NewPoint(tileX*geofence.tileWidth, (tileY+1)*geofence.tileHeight), NewPoint(tileX*geofence.tileWidth, tileY*geofence.tileHeight)}
 
 			if haveIntersectingEdges(bBoxPoly, vertices) || hasPointInPolygon(vertices, bBoxPoly) {
 				geofence.tiles[tileHash] = TILE_EITHER

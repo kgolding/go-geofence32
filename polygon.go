@@ -7,24 +7,24 @@ import (
 // A Polygon is carved out of a 2D plane by a set of (possibly disjoint) contours.
 // It can thus contain holes, and can be self-intersecting.
 type Polygon struct {
-	points []*Point
+	points []Point
 }
 
 // Creates and returns a new pointer to a Polygon
 // composed of the passed in points.  Points are
 // considered to be in order such that the last point
 // forms an edge with the first point.
-func NewPolygon(points []*Point) *Polygon {
+func NewPolygon(points []Point) *Polygon {
 	return &Polygon{points: points}
 }
 
 // Returns the points of the current Polygon.
-func (p *Polygon) Points() []*Point {
+func (p *Polygon) Points() []Point {
 	return p.points
 }
 
 // Appends the passed in contour to the current Polygon.
-func (p *Polygon) Add(point *Point) {
+func (p *Polygon) Add(point Point) {
 	p.points = append(p.points, point)
 }
 
@@ -41,7 +41,7 @@ func (p *Polygon) IsClosed() bool {
 }
 
 // Returns whether or not the current Polygon contains the passed in Point.
-func (p *Polygon) Contains(point *Point) bool {
+func (p *Polygon) Contains(point Point) bool {
 	if !p.IsClosed() {
 		return false
 	}
@@ -63,7 +63,7 @@ func (p *Polygon) Contains(point *Point) bool {
 // Using the raycast algorithm, this returns whether or not the passed in point
 // Intersects with the edge drawn by the passed in start and end points.
 // Original implementation: http://rosettacode.org/wiki/Ray-casting_algorithm#Go
-func (p *Polygon) intersectsWithRaycast(point *Point, start *Point, end *Point) bool {
+func (p *Polygon) intersectsWithRaycast(point Point, start Point, end Point) bool {
 	// Always ensure that the the first point
 	// has a y coordinate that is less than the second point
 	if start.lng > end.lng {

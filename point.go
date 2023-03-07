@@ -22,17 +22,17 @@ const (
 )
 
 // Returns a new Point populated by the passed in latitude (lat) and longitude (lng) values.
-func NewPoint(lat float32, lng float32) *Point {
-	return &Point{lat: lat, lng: lng}
+func NewPoint(lat float32, lng float32) Point {
+	return Point{lat: lat, lng: lng}
 }
 
 // Returns Point p's latitude.
-func (p *Point) Lat() float32 {
+func (p Point) Lat() float32 {
 	return p.lat
 }
 
 // Returns Point p's longitude.
-func (p *Point) Lng() float32 {
+func (p Point) Lng() float32 {
 	return p.lng
 }
 
@@ -40,7 +40,7 @@ func (p *Point) Lng() float32 {
 // by transposing the origin point the passed in distance (in kilometers)
 // by the passed in compass bearing (in degrees).
 // Original Implementation from: http://www.movable-type.co.uk/scripts/latlong.html
-func (p *Point) PointAtDistanceAndBearing(dist float32, bearing float32) *Point {
+func (p Point) PointAtDistanceAndBearing(dist float32, bearing float32) Point {
 
 	dr := dist / EARTH_RADIUS
 
@@ -63,7 +63,7 @@ func (p *Point) PointAtDistanceAndBearing(dist float32, bearing float32) *Point 
 	lat2 = lat2 * (180.0 / math.Pi)
 	lng2 = lng2 * (180.0 / math.Pi)
 
-	return &Point{lat: lat2, lng: lng2}
+	return Point{lat: lat2, lng: lng2}
 }
 
 // Calculates the Haversine distance between two points in kilometers.
@@ -104,7 +104,7 @@ func (p *Point) BearingTo(p2 *Point) float32 {
 
 // Calculates the midpoint between 'this' point and the supplied point.
 // Original implementation from http://www.movable-type.co.uk/scripts/latlong.html
-func (p *Point) MidpointTo(p2 *Point) *Point {
+func (p Point) MidpointTo(p2 Point) Point {
 	lat1 := p.lat * math.Pi / 180.0
 	lat2 := p2.lat * math.Pi / 180.0
 
@@ -182,7 +182,7 @@ func (p *Point) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	*p = *NewPoint(values["lat"], values["lng"])
+	*p = NewPoint(values["lat"], values["lng"])
 
 	return nil
 }
